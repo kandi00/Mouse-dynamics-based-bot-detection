@@ -4,12 +4,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def create_histo(df):
+     for column in df.columns:
+          tmp = np.array(df[column].values.tolist())
+          df[column] = np.where(tmp > 128, np.nan, tmp).tolist()
+          tmp = np.array(df[column].values.tolist())
+          df[column] = np.where(tmp < -128, np.nan, tmp).tolist()
+
      #df = df.abs()
      dx_values_df = df.values[:, 0:128]
      print(dx_values_df)
      dy_values_df = df.values[:, 128:256]
      print(dy_values_df)
 
+     ''' Histograms using custom bins '''
      #histo for dx values
      #bins = [0, 5, 10, 20, 30, 100]
      bins = [-100, -30, -20, -10, -5 , 0, 5, 10, 20, 30, 100]
@@ -26,6 +33,27 @@ def create_histo(df):
      _ = plt.hist(dy_values_df[~np.isnan(dy_values_df)], bins=bins)  # arguments are passed to np.histogram
      plt.xlabel('dy elmozdulások hossza',fontsize=12)
      plt.ylabel('Gyakoriság',fontsize=12)
+     plt.show()
+
+     ''' Histograms with curve for distribution '''
+     data = dx_values_df[~np.isnan(dx_values_df)]
+     mu = np.mean(data)
+     sigma = np.std(data)
+     f = plt.figure()
+     count, bins, ignored = plt.hist(data, 30, density=True)
+     plt.plot(bins, 1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(- (bins - mu) ** 2 / (2 * sigma ** 2)), linewidth=2,color='r')
+     plt.xlabel('dx elmozdulások hossza',fontsize=12)
+     plt.ylabel('Relatív gyakoriság',fontsize=12)
+     plt.show()
+
+     data = dy_values_df[~np.isnan(dy_values_df)]
+     mu = np.mean(data)
+     sigma = np.std(data)
+     f = plt.figure()
+     count, bins, ignored = plt.hist(data, 30, density=True)
+     plt.plot(bins, 1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(- (bins - mu) ** 2 / (2 * sigma ** 2)), linewidth=2,color='r')
+     plt.xlabel('dy elmozdulások hossza',fontsize=12)
+     plt.ylabel('Relatív gyakoriság',fontsize=12)
      plt.show()
 
 def internal_points_histo(df):
@@ -51,9 +79,9 @@ def dist_vs_nr_of_internal_points(df):
 
 def main():
      df1 = pd.read_csv('../csv_files/1min_nan.csv')
-     create_histo(df1)
+     # create_histo(df1)
      df2 = pd.read_csv('../csv_files/3min_nan.csv')
-     create_histo(df2)
+     # create_histo(df2)
      create_histo(df1.append(df2))
      df = pd.read_csv('../csv_files/bot_bezier_nan.csv')
      create_histo(df)

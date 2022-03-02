@@ -69,7 +69,7 @@ def bezier_curves_to_csv():
     df = pd.read_csv('../csv_files/kezdoEsVegpontok.csv')
     df.columns = ['x1', 'y1', 'x2', 'y2', 'nr_of_internal_points']
 
-    with open('../csv_files/csv_filesbot_bezier_nan.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('../csv_files/bot_bezier_nan.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
         column_names = []
         for i in range(1, 129):

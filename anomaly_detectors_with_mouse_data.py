@@ -176,29 +176,29 @@ def train(df_3min, df_1min, df_bot):
 def main():
     """Using detectors with extracted features"""
     global suptitle
-    suptitle = "31 extracted features"
-    df_human_3min = pd.read_csv('../csv_files/3min_extracted_features.csv')
-    df_human_1min = pd.read_csv('../csv_files/1min_extracted_features.csv')
-    df_bot_1 = pd.read_csv('../csv_files/bot_humanLike_extracted_features.csv')
-    df_bot_2 = pd.read_csv('../csv_files/bot_humanLike_random_extracted_features.csv')
-    df_bot_3 = pd.read_csv('../csv_files/bot_bezier_extracted_features.csv')
-    df_bot_4 = pd.read_csv('../csv_files/bot_bezier_random_extracted_features.csv')
+    # suptitle = "31 kinyert jellemző"
+    # df_human_3min = pd.read_csv('../csv_files/3min_extracted_features.csv')
+    # df_human_1min = pd.read_csv('../csv_files/1min_extracted_features.csv')
+    # df_bot_1 = pd.read_csv('../csv_files/bot_humanLike_extracted_features.csv')
+    # df_bot_2 = pd.read_csv('../csv_files/bot_humanLike_random_extracted_features.csv')
+    # df_bot_3 = pd.read_csv('../csv_files/bot_bezier_extracted_features.csv')
+    # df_bot_4 = pd.read_csv('../csv_files/bot_bezier_random_extracted_features.csv')
 
     global title
-    title = "bot - Human like curve, human - 1min"
-    train(df_human_3min, df_human_1min, df_bot_1)
-
-    title = "bot - Human like curve by random points, human - 1min"
-    train(df_human_3min, df_human_1min, df_bot_2)
-
-    title = "bot - Cubic Bézier curve, human - 1min"
-    train(df_human_3min, df_human_1min, df_bot_3)
-
-    title = "bot - Cubic Bézier curve by random points, human - 1min"
-    train(df_human_3min, df_human_1min, df_bot_4)
+    # title = "bot adathalmaz - humanLike, emberi adathalmaz - 1min"
+    # train(df_human_3min, df_human_1min, df_bot_1)
+    #
+    # title = "bot adathalmaz - randomHumanLike, emberi adathalmaz - 1min"
+    # train(df_human_3min, df_human_1min, df_bot_2)
+    #
+    # title = "bot adathalmaz - bezier, emberi adathalmaz - 1min"
+    # train(df_human_3min, df_human_1min, df_bot_3)
+    #
+    # title = "bot adathalmaz - randomBezier, emberi adathalmaz - 1min"
+    # train(df_human_3min, df_human_1min, df_bot_4)
 
     """Using detectors with raw features"""
-    suptitle = "128 dx + 128 dy raw features"
+    suptitle = "128 dx + 128 dy jellemző"
 
     # human train data
     df_human_3min = pd.read_csv('../csv_files/3min.csv')
@@ -210,16 +210,16 @@ def main():
     df_bot_3 = pd.read_csv('../csv_files/bot_bezier.csv')
     df_bot_4 = pd.read_csv('../csv_files/bot_bezier_random.csv')
 
-    title = "bot - Human like curve, human - 1min"
+    title = "bot adathalmaz - humanLike, emberi adathalmaz - 1min"
     train(df_human_3min, df_human_1min, df_bot_1)
 
-    title = "bot - Human like curve by random points, human - 1min"
+    title = "bot adathalmaz - randomHumanLike, emberi adathalmaz - 1min"
     train(df_human_3min, df_human_1min, df_bot_2)
 
-    title = "bot - Cubic Bézier curve, human - 1min"
+    title = "bot adathalmaz - bezier, emberi adathalmaz - 1min"
     train(df_human_3min, df_human_1min, df_bot_3)
 
-    title = "bot - Cubic Bézier curve by random points, human - 1min"
+    title = "bot adathalmaz - randomBezier, emberi adathalmaz - 1min"
     train(df_human_3min, df_human_1min, df_bot_4)
 
 if __name__ == "__main__":
