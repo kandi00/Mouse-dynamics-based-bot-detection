@@ -9,8 +9,8 @@ The Scripts module contains the following scripts:
  - histogram.py - creates histograms
  - trajectories.py - visualizes mouse trajectories
 
-<img src="https://github.com/kandi00/Mouse-dynamics-based-bot-detection/blob/main/trajectories/human_bezier_hu.png?raw=true" width="240"/>
-<img src="https://github.com/kandi00/Mouse-dynamics-based-bot-detection/blob/main/trajectories/human_human_like_hu.png?raw=true" width="240"/>
+<img src="https://github.com/kandi00/Mouse-dynamics-based-bot-detection/blob/main/trajectories/human_bezier_hu.png?raw=true" width="280"/>
+<img src="https://github.com/kandi00/Mouse-dynamics-based-bot-detection/blob/main/trajectories/human_human_like_hu.png?raw=true" width="280"/>
 
 ## Requirements
 The requirements.txt file contains all dependencies needed for python scripts.
