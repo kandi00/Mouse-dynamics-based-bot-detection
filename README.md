@@ -2,7 +2,7 @@
 
 ## About
 The Scripts module contains the following scripts:
- - creation_of_datasets.py - creates csv files with raw features using the Sapimouse dataset
+ - creation_of_datasets.py - creates csv files with raw features using the publicly available Sapimouse dataset - https://www.ms.sapientia.ro/~manyi/sapimouse/sapimouse.html
  - synthetic_datasets_by_generating_curves.py - creates csv files with raw features based on Bezier curves 
  - feature_extraction.py - extracts features from raw datasets
  - anomaly_detectors_with_mouse_data.py - unsupervised anomaly detection based on real and synthetic datasets
