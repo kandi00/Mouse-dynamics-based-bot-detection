@@ -181,5 +181,10 @@ def main():
     df_human_1min_zeros = pd.read_csv('../csv_files/1min.csv')
     feature_extraction(df_human_1min, df_human_1min_zeros, '../csv_files/1min_extracted_features.csv')
 
+    # gan
+    df_bot = pd.read_csv('../csv_files/synthetic_gan_3min_all_nan_hidden_dim_64.csv')  # for statistical features
+    df_bot_zeros = pd.read_csv('../csv_files/synthetic_gan_3min_all_hidden_dim_64.csv')  # for raw features
+    feature_extraction(df_bot, df_bot_zeros, '../csv_files/synthetic_gan_3min_all_extracted_features_hidden_dim_64.csv')
+
 if __name__ == "__main__":
     main()

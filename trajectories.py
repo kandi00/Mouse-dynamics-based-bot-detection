@@ -13,17 +13,18 @@ def plotBasedOnDistances(df_human, df_bot, fig_suptitle, fig_title):
      print(numpy_array_bot)
      print(numpy_array_human)
      for i in range(0, len(numpy_array_bot)):
-          x_bot = np.cumsum(np.append(0, numpy_array_bot[i][:127]))
+          x_bot = np.cumsum(np.append(0, numpy_array_bot[i][:128]))
           print(len(x_bot))
-          x_human = np.append(0, np.cumsum(numpy_array_human[i][:127]))
+          x_human = np.append(0, np.cumsum(numpy_array_human[i][:128]))
           print(len(x_human))
-          y_bot = np.cumsum(np.append(0, numpy_array_bot[i][127:254]))
+          y_bot = np.cumsum(np.append(0, numpy_array_bot[i][128:]))
           print(len(y_bot))
-          y_human = np.append(0, np.cumsum(numpy_array_human[i][127:254]))
+          y_human = np.append(0, np.cumsum(numpy_array_human[i][128:]))
           print(len(y_human))
           
           plt.suptitle(fig_suptitle, fontsize=12)
           plt.title(fig_title, fontsize=12)
+          plt.title("Trajektória", fontsize=12)
           plt.plot(x_bot, y_bot, 'bo')
           plt.plot(x_human, y_human, 'go')
           plt.plot(x_bot[0], y_bot[0], 'ro')
@@ -37,9 +38,9 @@ def plotBasedOnDistances(df_human, df_bot, fig_suptitle, fig_title):
 def main():
      df_human = pd.read_csv('../csv_files/1min.csv', nrows=1)
      df_bot = pd.read_csv('../csv_files/bot_bezier.csv', nrows=1)
-     plotBasedOnDistances(df_human, df_bot, 'Human mouse movement - green', 'Cubic Bézier curve - blue')
+     plotBasedOnDistances(df_human, df_bot, 'Emberi egérmogás - zöld', 'BezierCurve - kék')
      df_bot = pd.read_csv('../csv_files/bot_humanLike.csv', nrows=1)
-     plotBasedOnDistances(df_human, df_bot, 'Human mouse movement - green', 'Humanlike curve - blue')
+     plotBasedOnDistances(df_human, df_bot, 'Emberi egérmogás - zöld', 'HumanCurve - kék')
 
 if __name__ == "__main__":
     main()
