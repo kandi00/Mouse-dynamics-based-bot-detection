@@ -11,14 +11,19 @@ from pyod.models.ocsvm import OCSVM
 from pyod.models.iforest import IForest
 import matplotlib.pyplot as plt
 from pyod.utils.data import evaluate_print
+import joblib
+import os.path
 
 title = ''
 suptitle = ''
 num_scores = 10
 
-def detector(clf, human_train, human_test, bot_test, flag):
-    # train the detector
-    clf.fit(human_train)
+
+def detector(clf, human_test, bot_test, flag):
+    """
+       :param flag: refers to the type of detector in terms of y_pred - true or false
+       :return: (fpr, tpr, auc)
+    """
 
     positive_scores = clf.decision_function(human_test)
     negative_scores = clf.decision_function(bot_test)
@@ -33,7 +38,6 @@ def detector(clf, human_train, human_test, bot_test, flag):
         ps.append(sum_scores / num_scores)
     positive_scores = np.array(ps)
     print("positive_scores: ", positive_scores)
-
 
     # evaluate the model with synthetic data
     ps = list()
@@ -119,8 +123,8 @@ def detector_(clf, human_train, human_test, bot_test):
 
 
 # train detectors
-def trainDetector(clf, linestyle, detectorName, human_train, human_test, bot_test, flag):
-    (fpr, tpr, roc_auc) = detector(clf, human_train, human_test, bot_test, flag)
+def trainDetector(clf, linestyle, detectorName, human_test, bot_test, flag):
+    (fpr, tpr, roc_auc) = detector(clf, human_test, bot_test, flag)
     # plot
     plt.title(title, fontsize=12)
     plt.suptitle(suptitle, fontsize=14)
@@ -128,7 +132,8 @@ def trainDetector(clf, linestyle, detectorName, human_train, human_test, bot_tes
     plt.ylabel("True positive rate")
     plt.plot(fpr, tpr, label=detectorName + ", auc=" + str(roc_auc)[0:4], linestyle=linestyle)
 
-def train(df_3min, df_1min, df_bot):
+
+def train(df_3min, df_1min, df_bot, type):
     """ create numpy arrays from dataframes """
     """ human train """
     array = df_3min.values
@@ -164,12 +169,23 @@ def train(df_3min, df_1min, df_bot):
     # detector_(OCSVM(), human_train, human_test, bot_test)
     # detector_(IForest(), human_train, human_test, bot_test)
 
-    trainDetector(COPOD(), "-", "COPOD", human_train, human_test, bot_test, True)  # Probabilistic
-    trainDetector(KNN(), "dotted", "KNN", human_train, human_test, bot_test, True)  # Proximity-Based
-    trainDetector(PCA(), "-.", "PCA", human_train, human_test, bot_test, True)  # Linear Model
-    trainDetector(LOF(), ":", "LOF", human_train, human_test, bot_test, True)  # Proximity-Based
-    trainDetector(OCSVM(), '--', "OCSVM", human_train, human_test, bot_test, False)  # Linear Model
-    trainDetector(IForest(), 'dotted', "IFOREST", human_train, human_test, bot_test, True)  # Outlier Ensembles
+    ''' Probabilistic, Proximity-Based, Linear Model, Proximity-Based, Linear Model, Outlier Ensembles '''
+    detector_names = ["COPOD", "KNN", "PCA", "LOF", "OCSVM", "IForest"]
+    detector_line_styles = ["-", "dotted", "-.", ":", '--', 'dotted']
+    detectors_tuple = list(zip(detector_names, detector_line_styles))
+
+    for detector_tuple in detectors_tuple:
+        file_name = 'finalized_model_' + detector_tuple[0] + '_' + type + '_joblib.pkl'
+        file_exists = os.path.exists('../saved_detectors/' + file_name)
+        if file_exists:
+            clf = joblib.load('../saved_detectors/' + file_name)
+        else:
+            # train the detector
+            clf = globals()[detector_tuple[0]]()
+            clf.fit(human_train)
+            joblib.dump(clf, '../saved_detectors/'+file_name)
+        trainDetector(clf, detector_tuple[1], detector_tuple[0], human_test, bot_test, True)
+
     plt.legend(loc=0)
     plt.show()
 
@@ -237,25 +253,26 @@ def main():
     df_bot_2_extracted = pd.read_csv('../csv_files/bot_humanLike_random_extracted_features.csv')
     df_bot_3_extracted = pd.read_csv('../csv_files/bot_bezier_extracted_features.csv')
     df_bot_4_extracted = pd.read_csv('../csv_files/bot_bezier_random_extracted_features.csv')
-    df_bot_5_extracted = pd.read_csv('../csv_files/synthetic_gan_3min_all_extracted_features_hidden_dim_64.csv') #GAN
+    df_bot_5_extracted = pd.read_csv('../csv_files/synthetic_gan_3min_all_extracted_features_hidden_dim_64.csv') # GAN
 
     global title
     print(df_bot_1_extracted.shape)
     title = "bot adathalmaz - humanLike, emberi adathalmaz - 1min"
-    train(df_human_3min_extracted, df_human_1min_extracted, df_bot_1_extracted)
+    train(df_human_3min_extracted, df_human_1min_extracted, df_bot_1_extracted, '29features')
 
     title = "bot adathalmaz - randomHumanLike, emberi adathalmaz - 1min"
-    train(df_human_3min_extracted, df_human_1min_extracted, df_bot_2_extracted)
+    train(df_human_3min_extracted, df_human_1min_extracted, df_bot_2_extracted, '29features')
 
     title = "bot adathalmaz - bezier, emberi adathalmaz - 1min"
-    train(df_human_3min_extracted, df_human_1min_extracted, df_bot_3_extracted)
+    train(df_human_3min_extracted, df_human_1min_extracted, df_bot_3_extracted, '29features')
 
     title = "bot adathalmaz - randomBezier, emberi adathalmaz - 1min"
-    train(df_human_3min_extracted, df_human_1min_extracted, df_bot_4_extracted)
+    train(df_human_3min_extracted, df_human_1min_extracted, df_bot_4_extracted, '29features')
 
     title = "bot adathalmaz - GAN, emberi adathalmaz - 1min"
-    test_len = df_human_1min_extracted.shape[0] if df_human_1min_extracted.shape[0] < df_bot_5_extracted.shape[0] else df_bot_5_extracted.shape[0]
-    train(df_human_3min_extracted, df_human_1min_extracted[:test_len], df_bot_5_extracted[:test_len])
+    test_len = df_human_1min_extracted.shape[0] if df_human_1min_extracted.shape[0] < df_bot_5_extracted.shape[0] else \
+    df_bot_5_extracted.shape[0]
+    train(df_human_3min_extracted, df_human_1min_extracted[:test_len], df_bot_5_extracted[:test_len], '29features')
 
     """Using detectors with raw features"""
     suptitle = "128 dx + 128 dy jellemző"
@@ -272,47 +289,47 @@ def main():
     df_bot_5 = pd.read_csv('../csv_files/synthetic_gan_3min_all_hidden_dim_64.csv')
 
     title = "bot adathalmaz - humanLike, emberi adathalmaz - 1min"
-    train(df_human_3min, df_human_1min, df_bot_1)
+    train(df_human_3min, df_human_1min, df_bot_1, 'raw_features')
 
     title = "bot adathalmaz - randomHumanLike, emberi adathalmaz - 1min"
-    train(df_human_3min, df_human_1min, df_bot_2)
+    train(df_human_3min, df_human_1min, df_bot_2, 'raw_features')
 
     title = "bot adathalmaz - bezier, emberi adathalmaz - 1min"
-    train(df_human_3min, df_human_1min, df_bot_3)
+    train(df_human_3min, df_human_1min, df_bot_3, 'raw_features')
 
     title = "bot adathalmaz - randomBezier, emberi adathalmaz - 1min"
-    train(df_human_3min, df_human_1min, df_bot_4)
+    train(df_human_3min, df_human_1min, df_bot_4, 'raw_features')
 
     title = "bot adathalmaz - GAN, emberi adathalmaz - 1min"
-    train(df_human_3min, df_human_1min[:test_len], df_bot_5[:test_len])
+    train(df_human_3min, df_human_1min[:test_len], df_bot_5[:test_len], 'raw_features')
 
-    # combine_detectors(df_human_3min, df_human_1min.append(df_bot_1))
+    combine_detectors(df_human_3min, df_human_1min.append(df_bot_1))
 
     '''dx, dy sepertely- raw data'''
 
     title = "bot adathalmaz - humanLike, emberi adathalmaz - 1min"
     suptitle = "128 dx jellemző"
-    train(df_human_3min.iloc[:, 0:128], df_human_1min.iloc[:, 0:128], df_bot_1.iloc[:, 0:128])
+    train(df_human_3min.iloc[:, 0:128], df_human_1min.iloc[:, 0:128], df_bot_1.iloc[:, 0:128], 'dx_raw')
     suptitle = "128 dy jellemző"
-    train(df_human_3min.iloc[:, 128:256], df_human_1min.iloc[:, 128:256], df_bot_1.iloc[:, 128:256])
+    train(df_human_3min.iloc[:, 128:256], df_human_1min.iloc[:, 128:256], df_bot_1.iloc[:, 128:256], 'dy_raw')
 
     title = "bot adathalmaz - randomHumanLike, emberi adathalmaz - 1min"
     suptitle = "128 dx jellemző"
-    train(df_human_3min.iloc[:, 0:128], df_human_1min.iloc[:, 0:128], df_bot_2.iloc[:, 0:128])
+    train(df_human_3min.iloc[:, 0:128], df_human_1min.iloc[:, 0:128], df_bot_2.iloc[:, 0:128], 'dx_raw')
     suptitle = "128 dy jellemző"
-    train(df_human_3min.iloc[:, 128:256], df_human_1min.iloc[:, 128:256], df_bot_2.iloc[:, 128:256])
+    train(df_human_3min.iloc[:, 128:256], df_human_1min.iloc[:, 128:256], df_bot_2.iloc[:, 128:256], 'dy_raw')
 
     title = "bot adathalmaz - bezier, emberi adathalmaz - 1min"
     suptitle = "128 dx jellemző"
-    train(df_human_3min.iloc[:, 0:128], df_human_1min.iloc[:, 0:128], df_bot_3.iloc[:, 0:128])
+    train(df_human_3min.iloc[:, 0:128], df_human_1min.iloc[:, 0:128], df_bot_3.iloc[:, 0:128], 'dx_raw')
     suptitle = "128 dy jellemző"
-    train(df_human_3min.iloc[:, 128:256], df_human_1min.iloc[:, 128:256], df_bot_3.iloc[:, 128:256])
+    train(df_human_3min.iloc[:, 128:256], df_human_1min.iloc[:, 128:256], df_bot_3.iloc[:, 128:256], 'dy_raw')
 
     title = "bot adathalmaz - randomBezier, emberi adathalmaz - 1min"
     suptitle = "128 dx jellemző"
-    train(df_human_3min.iloc[:, 0:128], df_human_1min.iloc[:, 0:128], df_bot_4.iloc[:, 0:128])
+    train(df_human_3min.iloc[:, 0:128], df_human_1min.iloc[:, 0:128], df_bot_4.iloc[:, 0:128], 'dx_raw')
     suptitle = "128 dy jellemző"
-    train(df_human_3min.iloc[:, 128:256], df_human_1min.iloc[:, 128:256], df_bot_4.iloc[:, 128:256])
+    train(df_human_3min.iloc[:, 128:256], df_human_1min.iloc[:, 128:256], df_bot_4.iloc[:, 128:256], 'dy_raw')
 
     '''dx, dy sepertely- dataset containing extracted features '''
 
@@ -320,41 +337,41 @@ def main():
     suptitle = "dx értékekből kinyert 14 jellemző "
     train(df_human_3min_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]],
           df_human_1min_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]],
-          df_bot_1_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]])
+          df_bot_1_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]], 'dx_29features')
     suptitle = "dy értékekből kinyert 14 jellemző "
     train(df_human_3min_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]],
           df_human_1min_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]],
-          df_bot_1_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]])
+          df_bot_1_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]], 'dy_29features')
 
     title = "bot adathalmaz - randomHumanLike, emberi adathalmaz - 1min"
     suptitle = "dx értékekből kinyert 14 jellemző "
     train(df_human_3min_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]],
           df_human_1min_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]],
-          df_bot_2_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]])
+          df_bot_2_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]], 'dx_29features')
     suptitle = "dy értékekből kinyert 14 jellemző "
     train(df_human_3min_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]],
           df_human_1min_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]],
-          df_bot_2_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]])
+          df_bot_2_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]], 'dy_29features')
 
     title = "bot adathalmaz - bezier, emberi adathalmaz - 1min"
     suptitle = "dx értékekből kinyert 14 jellemző "
     train(df_human_3min_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]],
           df_human_1min_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]],
-          df_bot_3_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]])
+          df_bot_3_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]], 'dx_29features')
     suptitle = "dy értékekből kinyert 14 jellemző "
     train(df_human_3min_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]],
           df_human_1min_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]],
-          df_bot_3_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]])
+          df_bot_3_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]], 'dy_29features')
 
     title = "bot adathalmaz - randomBezier, emberi adathalmaz - 1min"
     suptitle = "dx értékekből kinyert 14 jellemző "
     train(df_human_3min_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]],
           df_human_1min_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]],
-          df_bot_4_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]])
+          df_bot_4_extracted.iloc[:, np.r_[0:7, 15:17, 19:24]], 'dx_29features')
     suptitle = "dy értékekből kinyert 14 jellemző "
     train(df_human_3min_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]],
           df_human_1min_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]],
-          df_bot_4_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]])
+          df_bot_4_extracted.iloc[:, np.r_[7:14, 17:19, 24:29]], 'dy_29features')
 
 
 if __name__ == "__main__":
