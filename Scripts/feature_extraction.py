@@ -101,6 +101,30 @@ def movement_efficiency(df):
     result_df = pd.DataFrame({"label_efficiency": efficiency_array})
     return result_df
 
+def movement_efficiency_(df):
+    rows = df.shape[0]
+    dx_array = df.iloc[:, 0:128].values
+    dy_array = df.iloc[:, 128:256].values
+    efficiency = list()
+
+    #for i in range(0, len(positive_scores) - num_scores + 1):
+    for i in range(0, rows):
+        counter = 0
+        x = np.cumsum(np.append(0, dx_array[i][:127]))
+        y = np.cumsum(np.append(0, dy_array[i][:127]))
+        for j in range(0, len(x)-5):
+            distance = dist(x[j], y[j], x[j+5], y[j+5])
+            tmp = 0
+            for k in range(j+1, j+5):
+                tmp = tmp + dist(x[k], y[k], x[k - 1], y[k - 1])
+            if tmp == distance and tmp != 0:
+                counter = counter + 1
+        efficiency.append(counter)
+
+    efficiency_array = np.array(efficiency)
+    result_df = pd.DataFrame({"label_efficiency": efficiency_array})
+    return result_df
+
 def createDataframeWithStatisticalFeatures(df):
     # Create new dataframe with new features
     data = {
@@ -138,9 +162,10 @@ def feature_extraction(df, df_zeros, file_name):
     # seperate dataframe to x and y features
     column_names_x = []
     column_names_y = []
-    for i in range(1, 121):
+    for i in range(1, 129):
         column_names_x += ['dx' + str(i)]
         column_names_y += ['dy' + str(i)]
+
     dfX = df[column_names_x]
     dfY = df[column_names_y]
 
@@ -149,6 +174,7 @@ def feature_extraction(df, df_zeros, file_name):
     df_stat = createDataframeWithStatisticalFeatures(dfX)
     df_stat = pd.concat([df_stat, createDataframeWithStatisticalFeatures(dfY)], axis = 1)
     df_stat = pd.concat([df_stat, movement_efficiency(df_zeros)], axis = 1)
+    # df_stat = pd.concat([df_stat, movement_efficiency_(df_zeros)], axis = 1)
     df_stat = pd.concat([df_stat, smoothness(df)], axis = 1)
     df_stat = pd.concat([df_stat, calculate_histo(df)], axis = 1)
     df_stat.to_csv(file_name, index=False)

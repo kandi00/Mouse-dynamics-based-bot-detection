@@ -28,9 +28,7 @@ def detector(clf, human_test, bot_test, flag):
     positive_scores = clf.decision_function(human_test)
     negative_scores = clf.decision_function(bot_test)
 
-    ''''''
     ps = list()
-    print("positive_scores: ", positive_scores)
     for i in range(0, len(positive_scores) - num_scores + 1):
         sum_scores = 0
         for j in range(i, i + num_scores):
@@ -49,10 +47,6 @@ def detector(clf, human_test, bot_test, flag):
         ps.append(sum_scores / num_scores)
     negative_scores = np.array(ps)
     print("negative_scores", negative_scores)
-    ''''''
-
-    # print("POSITIVE: ", positive_scores)
-    # print("NEGATIVE: ", negative_scores)
 
     # 0 - inlier; 1 - outlier
     zeros = np.zeros(len(positive_scores))
@@ -75,17 +69,6 @@ def detector(clf, human_test, bot_test, flag):
     print('van-e negativ ertek: ', y_pred[y_pred <= 0])
 
     fpr, tpr, thresholds = roc_curve(y, y_pred, pos_label=0)  # pos_label - label of positive class
-
-    """TNR, FPR, FNR, TPR """
-    # from sklearn.metrics import confusion_matrix
-    # tn, fp, fn, tp = confusion_matrix(y, y_pred).ravel()
-    # my_tpr = tp / len(positive_scores)
-    # my_fpr = fp / len(negative_scores)
-    # nr = fn / len(positive_scores)
-    # tnr = tn / len(negative_scores)
-    # print("tpr: ", my_tpr, tpr)
-    # print("fpr: ", my_fpr, fpr)
-    """"""
 
     from sklearn import metrics
     roc_auc = metrics.auc(fpr, tpr)
@@ -137,7 +120,6 @@ def train(df_3min, df_1min, df_bot, type):
     """ create numpy arrays from dataframes """
     """ human train """
     array = df_3min.values
-    # array = df_3min
     shape_x = df_3min.shape[0]
     shape_y = df_3min.shape[1]
     human_train = array[0:shape_x, 0:shape_y]
@@ -146,7 +128,6 @@ def train(df_3min, df_1min, df_bot, type):
 
     """human test """
     array = df_1min.values
-    # array = df_1min
     shape_x = df_1min.shape[0]
     shape_y = df_1min.shape[1]
     human_test = array[0:shape_x, 0:shape_y]
@@ -155,7 +136,6 @@ def train(df_3min, df_1min, df_bot, type):
 
     """ bot test """
     array = df_bot.values
-    # array = df_bot
     shape_x = df_bot.shape[0]
     shape_y = df_bot.shape[1]
     bot_test = array[0:shape_x, 0:shape_y]
